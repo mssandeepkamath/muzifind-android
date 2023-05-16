@@ -8,7 +8,7 @@
 
 😵‍💫Requirements: Foreground Service, MediaProjectionManager, AudD Music Recognizer
 
-✅Done: Foreground Service implementation with draggable layout overlay, MediaProjectManager to listen the internal audio
+✅Done: Foreground Service implementation with draggable layout overlay, MediaProjectManager to listen the internal audio, UI
 
 🎶Language: Kotlin, Java, XML
 
