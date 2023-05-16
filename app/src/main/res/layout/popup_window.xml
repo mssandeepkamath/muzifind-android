@@ -1,33 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:padding="4dp"
-    android:background="@null">
+   >
+
 
     <androidx.cardview.widget.CardView
-        android:layout_centerInParent="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardCornerRadius="5dp">
+        app:cardCornerRadius="@dimen/_15sdp"
+        android:backgroundTint="@color/black"
+        android:layout_margin="@dimen/_15sdp"
+        android:orientation="vertical">
 
         <LinearLayout
-            android:padding="10dp"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            >
 
-            <TextView
-                android:id="@+id/titleText"
-                android:layout_gravity="center"
+            <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Displaying over other apps!"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:padding="10dp"/>
+                >
+
+                <com.airbnb.lottie.LottieAnimationView
+                    android:id="@+id/animation_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/_62sdp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_gravity="center"
+                    app:lottie_loop="true"
+                    app:lottie_rawRes="@raw/mic" />
+
+                <TextView
+                    android:layout_below="@id/animation_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:textColor="@color/white"
+                    />
+
+
+            </RelativeLayout>
 
             <Button
                 android:id="@+id/start_recording"
@@ -43,6 +60,8 @@
 
         </LinearLayout>
 
+
     </androidx.cardview.widget.CardView>
 
-</RelativeLayout>
+
+</LinearLayout>
