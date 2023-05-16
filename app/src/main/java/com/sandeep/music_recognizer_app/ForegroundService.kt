@@ -11,15 +11,15 @@ import android.media.AudioPlaybackCaptureConfiguration
 import android.media.AudioRecord
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
-import android.media.session.PlaybackState.ACTION_STOP
 import android.os.Build
+import android.os.Environment
 import android.os.IBinder
 import android.util.Log
 import android.view.*
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
-import java.io.File
-import java.io.FileOutputStream
+import com.airbnb.lottie.LottieAnimationView
+import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.concurrent.thread
@@ -37,6 +37,7 @@ class ForegroundService : Service() {
     private var mediaProjection: MediaProjection? = null
     private lateinit var audioCaptureThread: Thread
     private var audioRecord: AudioRecord? = null
+    private lateinit var outputFile:File
 
     override fun onCreate() {
         super.onCreate()
@@ -58,7 +59,7 @@ class ForegroundService : Service() {
             PixelFormat.TRANSLUCENT
         )
 
-        mParams.gravity = Gravity.CENTER
+        mParams.gravity = Gravity.CENTER or Gravity.TOP
 
         // getting a LayoutInflater
         layoutInflater = getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -66,10 +67,13 @@ class ForegroundService : Service() {
         mView = layoutInflater.inflate(R.layout.popup_window, null)
         // set onClickListener on the remove button, which removes
         // the view from the window
-
         mWindowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         mWindowManager.addView(mView, mParams)
         dragAndDrop()
+        val anim = mView.findViewById<LottieAnimationView>(R.id.animation_view)
+        anim.setAnimation(R.raw.mic)
+        anim.playAnimation()
+
     }
 
 
@@ -175,7 +179,7 @@ class ForegroundService : Service() {
          */
         val audioFormat = AudioFormat.Builder()
             .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-            .setSampleRate(8000)
+            .setSampleRate(48000)
             .setChannelMask(AudioFormat.CHANNEL_IN_MONO)
             .build()
 
@@ -188,19 +192,19 @@ class ForegroundService : Service() {
         audioRecord!!.startRecording()
 
         audioCaptureThread = thread(start = true) {
-            val outputFile = createAudioFile()
+            outputFile = createAudioFile(1)
             Log.d(LOG_TAG, "Created file for capture target: ${outputFile.absolutePath}")
             writeAudioToFile(outputFile)
         }
     }
 
-    private fun createAudioFile(): File {
-        val audioCapturesDirectory = File(getExternalFilesDir(null), "/AudioCaptures")
+    private fun createAudioFile(type:Int): File {
+        val audioCapturesDirectory = File(getExternalFilesDir(Environment.DIRECTORY_MUSIC), "/AudioCaptures")
         if (!audioCapturesDirectory.exists()) {
             audioCapturesDirectory.mkdirs()
         }
         val timestamp = SimpleDateFormat("dd-MM-yyyy-hh-mm-ss", Locale.US).format(Date())
-        val fileName = "Capture-$timestamp.pcm"
+        val fileName = if(type==1) "Capture-$timestamp.pcm" else "Capture-$timestamp.wav"
         return File(audioCapturesDirectory.absolutePath + "/" + fileName)
     }
 
@@ -229,13 +233,25 @@ class ForegroundService : Service() {
 
     private fun stopAudioCapture() {
         requireNotNull(mediaProjection) { "Tried to stop audio capture, but there was no ongoing capture in place!" }
+        val wavFile = createAudioFile(2)
         audioCaptureThread.interrupt()
         audioCaptureThread.join()
         audioRecord!!.stop()
         audioRecord!!.release()
         audioRecord = null
         mediaProjection!!.stop()
-        stopSelf()
+
+        try
+        {
+            PCMToWAV(outputFile,wavFile,1,48000,16)
+        }catch (ioException:IOException) {
+            Log.e("wav error",ioException.toString())
+        }
+        finally {
+            stopSelf()
+        }
+
+
     }
 
     override fun onBind(p0: Intent?): IBinder? = null
@@ -266,7 +282,75 @@ class ForegroundService : Service() {
         const val EXTRA_RESULT_DATA = "AudioCaptureService:Extra:ResultData"
     }
 
+    @Throws(IOException::class)
+    fun PCMToWAV(
+        input: File,
+        output: File?,
+        channelCount: Int,
+        sampleRate: Int,
+        bitsPerSample: Int,
+    ){
+        val inputSize = input.length().toInt()
+        FileOutputStream(output).use { encoded ->
+            // WAVE RIFF header
+            writeToOutput(encoded, "RIFF") // chunk id
+            writeToOutput(encoded, 36 + inputSize) // chunk size
+            writeToOutput(encoded, "WAVE") // format
+
+            // SUB CHUNK 1 (FORMAT)
+            writeToOutput(encoded, "fmt ") // subchunk 1 id
+            writeToOutput(encoded, 16) // subchunk 1 size
+            writeToOutput(encoded, 1.toShort()) // audio format (1 = PCM)
+            writeToOutput(encoded, channelCount.toShort()) // number of channelCount
+            writeToOutput(encoded, sampleRate) // sample rate
+            writeToOutput(encoded, sampleRate * channelCount * bitsPerSample / 8) // byte rate
+            writeToOutput(encoded, (channelCount * bitsPerSample / 8).toShort()) // block align
+            writeToOutput(encoded, bitsPerSample.toShort()) // bits per sample
+            // SUB CHUNK 2 (AUDIO DATA)
+            writeToOutput(encoded, "data") // subchunk 2 id
+            writeToOutput(encoded, inputSize) // subchunk 2 size
+            copy(FileInputStream(input), encoded)
+        }
+    }
 
 
 
+    private val TRANSFER_BUFFER_SIZE = 10 * 1024
+    @Throws(IOException::class)
+    fun writeToOutput(output: OutputStream, data: String) {
+        for (element in data) {
+            output.write(element.toInt())
+        }
+    }
+
+    @Throws(IOException::class)
+    fun writeToOutput(output: OutputStream, data: Int) {
+        output.write(data shr 0)
+        output.write(data shr 8)
+        output.write(data shr 16)
+        output.write(data shr 24)
+    }
+
+    @Throws(IOException::class)
+    fun writeToOutput(output: OutputStream, data: Short) {
+        output.write(data.toInt() shr 0)
+        output.write(data.toInt() shr 8)
+    }
+
+    @Throws(IOException::class)
+    fun copy(source: InputStream, output: OutputStream): Long {
+        return copy(source, output, TRANSFER_BUFFER_SIZE)
+    }
+
+    @Throws(IOException::class)
+    fun copy(source: InputStream, output: OutputStream, bufferSize: Int): Long {
+        var read = 0L
+        val buffer = ByteArray(bufferSize)
+        var n: Int
+        while (source.read(buffer).also { n = it } != -1) {
+            output.write(buffer, 0, n)
+            read += n.toLong()
+        }
+        return read
+    }
     }
