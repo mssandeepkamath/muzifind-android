@@ -18,6 +18,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
+            android:layout_marginVertical="@dimen/_2sdp"
             >
 
             <RelativeLayout
@@ -25,10 +26,19 @@
                 android:layout_height="wrap_content"
                 >
 
+                <ImageView
+                    android:id="@+id/close_window"
+                    android:layout_width="@dimen/_27sdp"
+                    android:layout_height="@dimen/_27sdp"
+                    android:src="@drawable/close"
+                   android:layout_alignEnd="@id/animation_view"
+                    android:layout_margin="@dimen/_10sdp"
+                    />
+
                 <com.airbnb.lottie.LottieAnimationView
                     android:id="@+id/animation_view"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/_62sdp"
+                    android:layout_height="@dimen/_63sdp"
                     android:layout_centerHorizontal="true"
                     android:layout_alignParentTop="true"
                     android:layout_gravity="center"
@@ -36,27 +46,52 @@
                     app:lottie_rawRes="@raw/mic" />
 
                 <TextView
-                    android:layout_below="@id/animation_view"
+                    android:id="@+id/status_text_view"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_below="@id/animation_view"
                     android:layout_centerHorizontal="true"
+                    android:layout_marginStart="@dimen/_2sdp"
+                    android:layout_marginTop="@dimen/_1sdp"
+                    android:layout_marginEnd="@dimen/_2sdp"
+                    android:layout_marginBottom="@dimen/_1sdp"
+                    android:fontFamily="sans-serif"
                     android:textColor="@color/white"
-                    />
+                    android:textSize="@dimen/_12sdp" />
 
 
             </RelativeLayout>
 
-            <Button
-                android:id="@+id/start_recording"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Start" />
 
-            <Button
-                android:id="@+id/window_close"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Remove" />
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:weightSum="1"
+    android:layout_marginHorizontal="@dimen/_10sdp"
+    android:layout_marginTop="@dimen/_10sdp"
+    android:layout_marginBottom="@dimen/_10sdp"
+
+    >
+    <ImageView
+        android:id="@+id/start_recording"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/_35sdp"
+        android:src="@drawable/play_music"
+        android:layout_weight="0.5"
+        android:layout_marginHorizontal="@dimen/_10sdp"
+        />
+    <ImageView
+        android:id="@+id/stop_recording"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/_35sdp"
+        android:src="@drawable/stop_music"
+        android:layout_weight="0.5"
+        android:layout_marginHorizontal="@dimen/_10sdp"
+
+        />
+</LinearLayout>
+
 
         </LinearLayout>
 

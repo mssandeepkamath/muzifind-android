@@ -11,11 +11,11 @@ import android.media.AudioPlaybackCaptureConfiguration
 import android.media.AudioRecord
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
-import android.os.Build
-import android.os.Environment
-import android.os.IBinder
+import android.os.*
+import android.util.Base64
 import android.util.Log
 import android.view.*
+import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.airbnb.lottie.LottieAnimationView
@@ -37,7 +37,9 @@ class ForegroundService : Service() {
     private var mediaProjection: MediaProjection? = null
     private lateinit var audioCaptureThread: Thread
     private var audioRecord: AudioRecord? = null
-    private lateinit var outputFile:File
+    private lateinit var outputFile: File
+    private lateinit var animationView: LottieAnimationView
+    private lateinit var statusText: TextView
 
     override fun onCreate() {
         super.onCreate()
@@ -70,10 +72,8 @@ class ForegroundService : Service() {
         mWindowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         mWindowManager.addView(mView, mParams)
         dragAndDrop()
-        val anim = mView.findViewById<LottieAnimationView>(R.id.animation_view)
-        anim.setAnimation(R.raw.mic)
-        anim.playAnimation()
-
+        animationView = mView.findViewById(R.id.animation_view)
+        statusText = mView.findViewById(R.id.status_text_view)
     }
 
 
@@ -96,8 +96,17 @@ class ForegroundService : Service() {
                             Activity.RESULT_OK,
                             intent.getParcelableExtra(EXTRA_RESULT_DATA)!!
                         ) as MediaProjection
-                    mView.findViewById<View>(R.id.window_close).setOnClickListener { stopAudioCapture()}
-                    mView.findViewById<View>(R.id.start_recording).setOnClickListener { startAudioCapture()}
+                    mView.findViewById<View>(R.id.start_recording).setOnClickListener {
+                        startAudioCapture()
+                        setAirbnbAnimation(R.raw.mic, R.string.listen)
+                    }
+                    mView.findViewById<View>(R.id.stop_recording).setOnClickListener {
+                        stopAudioCapture()
+                        setAirbnbAnimation(R.raw.process, R.string.process)
+                    }
+                    mView.findViewById<View>(R.id.close_window).setOnClickListener {
+                        stopSelf()
+                    }
                     START_STICKY
                 }
                 ACTION_STOP -> {
@@ -111,59 +120,59 @@ class ForegroundService : Service() {
         }
     }
 
-        // for android version >=O we need to create
-        // custom notification stating
-        // foreground service is running
+    // for android version >=O we need to create
+    // custom notification stating
+    // foreground service is running
 
-        @RequiresApi(Build.VERSION_CODES.O)
-        private fun startMyOwnForeground() {
-            val channelName = "Background Service"
-            val chan = NotificationChannel(
-                NOTIFICATION_CHANNEL_ID,
-                channelName,
-                NotificationManager.IMPORTANCE_MIN
-            )
-            val manager =
-                (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager?)!!
-            manager.createNotificationChannel(chan)
-            val notificationBuilder: NotificationCompat.Builder =
-                NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-            val notification: Notification = notificationBuilder.setOngoing(true)
-                .setContentTitle("Service running")
-                .setContentText("Displaying over other apps") // this is important, otherwise the notification will show the way
-                // you want i.e. it will show some default notification
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setPriority(NotificationManager.IMPORTANCE_MIN)
-                .setCategory(Notification.CATEGORY_SERVICE)
-                .build()
-            startForeground(SERVICE_ID, notification)
-        }
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun startMyOwnForeground() {
+        val channelName = "Background Service"
+        val chan = NotificationChannel(
+            NOTIFICATION_CHANNEL_ID,
+            channelName,
+            NotificationManager.IMPORTANCE_MIN
+        )
+        val manager =
+            (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager?)!!
+        manager.createNotificationChannel(chan)
+        val notificationBuilder: NotificationCompat.Builder =
+            NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+        val notification: Notification = notificationBuilder.setOngoing(true)
+            .setContentTitle("Service running")
+            .setContentText("Displaying over other apps") // this is important, otherwise the notification will show the way
+            // you want i.e. it will show some default notification
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setPriority(NotificationManager.IMPORTANCE_MIN)
+            .setCategory(Notification.CATEGORY_SERVICE)
+            .build()
+        startForeground(SERVICE_ID, notification)
+    }
 
 
-        fun dragAndDrop() {
-            mView.setOnTouchListener { v, event ->
-                if (event.action == MotionEvent.ACTION_MOVE || event.action == MotionEvent.ACTION_DOWN) {
-                    var xOffset = v.width / 2
-                    var yOffset = v.height / 2
-                    var x = event.rawX - xOffset
-                    var y = event.rawY - yOffset
-                    var params = WindowManager.LayoutParams(
-                        WindowManager.LayoutParams.WRAP_CONTENT,
-                        WindowManager.LayoutParams.WRAP_CONTENT,
-                        x.toInt(), y.toInt(),
-                        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
-                                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                        PixelFormat.TRANSLUCENT
-                    )
-                    params.gravity = Gravity.TOP or Gravity.START
-                    mWindowManager.updateViewLayout(mView, params);
-                    return@setOnTouchListener true
-                }
-                return@setOnTouchListener false
+    fun dragAndDrop() {
+        mView.setOnTouchListener { v, event ->
+            if (event.action == MotionEvent.ACTION_MOVE || event.action == MotionEvent.ACTION_DOWN) {
+                var xOffset = v.width / 2
+                var yOffset = v.height / 2
+                var x = event.rawX - xOffset
+                var y = event.rawY - yOffset
+                var params = WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    x.toInt(), y.toInt(),
+                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                            WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
+                            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                    PixelFormat.TRANSLUCENT
+                )
+                params.gravity = Gravity.TOP or Gravity.START
+                mWindowManager.updateViewLayout(mView, params);
+                return@setOnTouchListener true
             }
+            return@setOnTouchListener false
         }
+    }
 
     @SuppressLint("MissingPermission")
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -179,7 +188,7 @@ class ForegroundService : Service() {
          */
         val audioFormat = AudioFormat.Builder()
             .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-            .setSampleRate(48000)
+            .setSampleRate(44100)
             .setChannelMask(AudioFormat.CHANNEL_IN_MONO)
             .build()
 
@@ -198,27 +207,25 @@ class ForegroundService : Service() {
         }
     }
 
-    private fun createAudioFile(type:Int): File {
-        val audioCapturesDirectory = File(getExternalFilesDir(Environment.DIRECTORY_MUSIC), "/AudioCaptures")
+    private fun createAudioFile(type: Int): File {
+        val audioCapturesDirectory =
+            File(getExternalFilesDir(Environment.DIRECTORY_MUSIC), "/AudioCaptures")
         if (!audioCapturesDirectory.exists()) {
             audioCapturesDirectory.mkdirs()
         }
         val timestamp = SimpleDateFormat("dd-MM-yyyy-hh-mm-ss", Locale.US).format(Date())
-        val fileName = if(type==1) "Capture-$timestamp.pcm" else "Capture-$timestamp.wav"
+        val fileName = if (type == 1) "Capture-$timestamp.pcm" else "Capture-$timestamp.wav"
         return File(audioCapturesDirectory.absolutePath + "/" + fileName)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun writeAudioToFile(outputFile: File) {
         val fileOutputStream = FileOutputStream(outputFile)
         val capturedAudioSamples = ShortArray(NUM_SAMPLES_PER_READ)
 
+
         while (!audioCaptureThread.isInterrupted) {
             audioRecord?.read(capturedAudioSamples, 0, NUM_SAMPLES_PER_READ)
-
-            // This loop should be as fast as possible to avoid artifacts in the captured audio
-            // You can uncomment the following line to see the capture samples but
-            // that will incur a performance hit due to logging I/O.
-            // Log.v(LOG_TAG, "Audio samples captured: ${capturedAudioSamples.toList()}")
 
             fileOutputStream.write(
                 capturedAudioSamples.toByteArray(),
@@ -228,8 +235,14 @@ class ForegroundService : Service() {
         }
 
         fileOutputStream.close()
-        Log.d(LOG_TAG, "Audio capture finished for ${outputFile.absolutePath}. File size is ${outputFile.length()} bytes.")
+        Log.d(
+            LOG_TAG,
+            "Audio capture finished for ${outputFile.absolutePath}. File size is ${outputFile.length()} bytes."
+        )
+
+
     }
+
 
     private fun stopAudioCapture() {
         requireNotNull(mediaProjection) { "Tried to stop audio capture, but there was no ongoing capture in place!" }
@@ -240,19 +253,28 @@ class ForegroundService : Service() {
         audioRecord!!.release()
         audioRecord = null
         mediaProjection!!.stop()
-
-        try
-        {
-            PCMToWAV(outputFile,wavFile,1,48000,16)
-        }catch (ioException:IOException) {
-            Log.e("wav error",ioException.toString())
-        }
-        finally {
+        try {
+//            PCMToWAV(outputFile, wavFile, 1, 44100, 16)
+            convertPcmToWav(outputFile.absolutePath, wavFile.absolutePath)
+        } catch (ioException: IOException) {
+            Log.e("wav error", ioException.toString())
+        } finally {
+            Handler().postDelayed(
+                {
+                    setAirbnbAnimation(R.raw.search, R.string.search)
+                    statusText.text = resources.getString(R.string.search)
+                }, 2000
+            )
+//            print("**********************")
+//            print(outputFile.absolutePath)
+//            val base64String = pcmFileToBase64(outputFile.absolutePath)
+//            println(base64String)
             stopSelf()
-        }
 
+        }
 
     }
+
 
     override fun onBind(p0: Intent?): IBinder? = null
 
@@ -289,14 +311,13 @@ class ForegroundService : Service() {
         channelCount: Int,
         sampleRate: Int,
         bitsPerSample: Int,
-    ){
+    ) {
         val inputSize = input.length().toInt()
         FileOutputStream(output).use { encoded ->
             // WAVE RIFF header
             writeToOutput(encoded, "RIFF") // chunk id
             writeToOutput(encoded, 36 + inputSize) // chunk size
             writeToOutput(encoded, "WAVE") // format
-
             // SUB CHUNK 1 (FORMAT)
             writeToOutput(encoded, "fmt ") // subchunk 1 id
             writeToOutput(encoded, 16) // subchunk 1 size
@@ -313,9 +334,8 @@ class ForegroundService : Service() {
         }
     }
 
-
-
     private val TRANSFER_BUFFER_SIZE = 10 * 1024
+
     @Throws(IOException::class)
     fun writeToOutput(output: OutputStream, data: String) {
         for (element in data) {
@@ -353,4 +373,202 @@ class ForegroundService : Service() {
         }
         return read
     }
+
+    private fun setAirbnbAnimation(animId: Int, textId: Int) {
+        animationView.setAnimation(animId)
+        animationView.playAnimation()
+        statusText.text = resources.getString(textId)
     }
+
+    fun pcmToByteArray(filePath: String): ByteArray {
+        // Create a File object from the PCM file path
+        val pcmFile = File(filePath)
+
+        // Create a byte array output stream to store the converted PCM data
+        val outputStream = ByteArrayOutputStream()
+        try {
+            // Create a FileInputStream to read the PCM file
+            val inputStream = FileInputStream(pcmFile)
+
+            // Define a buffer to read the PCM data
+            val buffer = ByteArray(1024 * 2)
+            var bytesRead: Int
+
+            // Read PCM data and write to the output stream
+            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                outputStream.write(buffer, 0, bytesRead)
+            }
+
+            // Close the input stream
+            inputStream.close()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        // Retrieve the byte array
+        val byteArray = outputStream.toByteArray()
+
+        // Close the ByteArrayOutputStream
+        try {
+            outputStream.close()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return byteArray
+    }
+
+    fun convertToBase64(byteArray: ByteArray): String {
+        val base64String = Base64.encodeToString(byteArray, Base64.NO_WRAP)
+        return base64String
+    }
+
+    fun byteArrayToHexString(byteArray: ByteArray): String {
+        val stringBuilder = StringBuilder()
+        for (byte in byteArray) {
+            val hex = String.format("%02X", byte.toInt() and 0xFF)
+            stringBuilder.append(hex)
+        }
+        return stringBuilder.toString()
+    }
+
+    fun convertPcmToWav(pcmFilePath: String, wavFilePath: String) {
+
+        val bufferSize = AudioRecord.getMinBufferSize(44100, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
+        val pcmData = ByteArray(bufferSize)
+
+        try {
+            val pcmFile = File(pcmFilePath)
+            val wavFile = File(wavFilePath)
+
+            val pcmInputStream = FileInputStream(pcmFile)
+            val wavOutputStream = FileOutputStream(wavFile)
+
+            // Write WAV header
+            writeWavHeader(wavOutputStream, pcmFile.length())
+
+            // Copy PCM data to WAV file
+            val dataInputStream = DataInputStream(pcmInputStream)
+            val dataOutputStream = DataOutputStream(wavOutputStream)
+
+            while (dataInputStream.read(pcmData) != -1) {
+                dataOutputStream.write(pcmData)
+            }
+
+            // Close streams
+            dataOutputStream.close()
+            dataInputStream.close()
+            pcmInputStream.close()
+            wavOutputStream.close()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+    }
+
+    @Throws(IOException::class)
+    fun writeWavHeader(outputStream: OutputStream, pcmSize: Long) {
+        val totalAudioLen = pcmSize + 36
+        val totalDataLen = pcmSize
+
+        val channels = 1
+        val byteRate = 44100 * 2 * channels.toLong()
+
+        val header = ByteArray(44)
+
+        // RIFF header
+        header[0] = 'R'.toByte()
+        header[1] = 'I'.toByte()
+        header[2] = 'F'.toByte()
+        header[3] = 'F'.toByte()
+        header[4] = (totalAudioLen and 0xff).toByte()
+        header[5] = (totalAudioLen shr 8 and 0xff).toByte()
+        header[6] = (totalAudioLen shr 16 and 0xff).toByte()
+        header[7] = (totalAudioLen shr 24 and 0xff).toByte()
+        header[8] = 'W'.toByte()
+        header[9] = 'A'.toByte()
+        header[10] = 'V'.toByte()
+        header[11] = 'E'.toByte()
+
+        // FMT sub-chunk
+        header[12] = 'f'.toByte()
+        header[13] = 'm'.toByte()
+        header[14] = 't'.toByte()
+        header[15] = ' '.toByte()
+        header[16] = 16 // Sub-chunk size (16 for PCM)
+        header[17] = 0
+        header[18] = 0
+        header[19] = 0
+        header[20] = 1 // Audio format (1 for PCM)
+        header[21] = 0
+        header[22] = channels.toByte()
+        header[23] = 0
+        header[24] = (44100 and 0xff).toByte()
+        header[25] = (44100 shr 8 and 0xff).toByte()
+        header[26] = (44100 shr 16 and 0xff).toByte()
+        header[27] = (44100 shr 24 and 0xff).toByte()
+        header[28] = (byteRate and 0xff).toByte()
+        header[29] = (byteRate shr 8 and 0xff).toByte()
+        header[30] = (byteRate shr 16 and 0xff).toByte()
+        header[31] = (byteRate shr 24 and 0xff).toByte()
+        header[32] = (2 * 16 / 8).toByte() // Block align
+        header[33] = 0
+        header[34] = 16 // Bits per sample
+        header[35] = 0
+
+        // Data sub-chunk
+        header[36] = 'd'.toByte()
+        header[37] = 'a'.toByte()
+        header[38] = 't'.toByte()
+        header[39] = 'a'.toByte()
+        header[40] = (totalDataLen and 0xff).toByte()
+        header[41] = (totalDataLen shr 8 and 0xff).toByte()
+        header[42] = (totalDataLen shr 16 and 0xff).toByte()
+        header[43] = (totalDataLen shr 24 and 0xff).toByte()
+
+        outputStream.write(header)
+    }
+
+
+    fun wavFileToBase64(wavFilePath: String): String {
+        try {
+            val wavFile = FileInputStream(wavFilePath)
+            val wavData = ByteArray(wavFile.available())
+            wavFile.read(wavData)
+            wavFile.close()
+
+            val base64String = Base64.encodeToString(wavData, Base64.DEFAULT)
+            return base64String
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        return ""
+    }
+
+    fun pcmFileToBase64(pcmFilePath: String): String {
+        try {
+            val pcmFile = File(pcmFilePath)
+            val inputStream = FileInputStream(pcmFile)
+            val bufferedInputStream = BufferedInputStream(inputStream)
+            val outputStream = ByteArrayOutputStream()
+
+            val buffer = ByteArray(4096)
+            var bytesRead: Int
+            while (bufferedInputStream.read(buffer).also { bytesRead = it } != -1) {
+                outputStream.write(buffer, 0, bytesRead)
+            }
+
+            outputStream.flush()
+            outputStream.close()
+            bufferedInputStream.close()
+
+            val pcmData = outputStream.toByteArray()
+            val base64Data = Base64.encodeToString(pcmData, Base64.NO_PADDING)
+            return base64Data
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return ""
+    }
+
+}
