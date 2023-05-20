@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.app.*
 import android.content.Context
 import android.content.Intent
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
 import android.graphics.PixelFormat
 import android.media.AudioAttributes
 import android.media.AudioFormat
@@ -11,7 +13,10 @@ import android.media.AudioPlaybackCaptureConfiguration
 import android.media.AudioRecord
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
+import android.media.session.PlaybackState.ACTION_STOP
+import android.net.Uri
 import android.os.*
+import android.provider.CalendarContract
 import android.util.Base64
 import android.util.Log
 import android.view.*
@@ -20,7 +25,11 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.airbnb.lottie.LottieAnimationView
+import com.sandeep.music_recognizer_app.databinding.PopupWindowBinding
+import org.json.JSONException
+import org.json.JSONObject
 import java.io.*
+import java.net.URLEncoder
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.concurrent.thread
@@ -30,7 +39,6 @@ import kotlin.system.exitProcess
 
 class ForegroundService : Service() {
 
-    private lateinit var mView: View
     private lateinit var mParams: WindowManager.LayoutParams
     private lateinit var mWindowManager: WindowManager
     private lateinit var layoutInflater: LayoutInflater
@@ -41,6 +49,10 @@ class ForegroundService : Service() {
     private lateinit var outputFile: File
     private lateinit var animationView: LottieAnimationView
     private lateinit var statusText: TextView
+    private lateinit var popupWindowBinding: PopupWindowBinding
+    private var isStarted = false
+    private var isStopped = false
+
 
     override fun onCreate() {
         super.onCreate()
@@ -67,28 +79,32 @@ class ForegroundService : Service() {
         // getting a LayoutInflater
         layoutInflater = getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
         // inflating the view with the custom layout we created
-        mView = layoutInflater.inflate(R.layout.popup_window, null)
+        popupWindowBinding = PopupWindowBinding.inflate(layoutInflater)
         // set onClickListener on the remove button, which removes
         // the view from the window
         mWindowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-        mWindowManager.addView(mView, mParams)
+        mWindowManager.addView(popupWindowBinding.root, mParams)
         dragAndDrop()
-        animationView = mView.findViewById(R.id.animation_view)
-        statusText = mView.findViewById(R.id.status_text_view)
+        animationView = popupWindowBinding.animationView
+        statusText = popupWindowBinding.statusTextView
+        popupWindowBinding.resultWindow.alpha = 0f
+        isStarted = false
+        isStopped = false
     }
 
 
     override fun onDestroy() {
         super.onDestroy()
         stopForeground(STOP_FOREGROUND_REMOVE)
-        mWindowManager.removeView(mView)
+        mWindowManager.removeView(popupWindowBinding.root)
         exitProcess(0)
     }
 
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-
+        popupWindowBinding.stopRecording.isEnabled = false
+        setAirbnbAnimation(R.raw.startup,R.string.start)
         return if (intent != null) {
             when (intent.action) {
                 ACTION_START -> {
@@ -97,15 +113,27 @@ class ForegroundService : Service() {
                             Activity.RESULT_OK,
                             intent.getParcelableExtra(EXTRA_RESULT_DATA)!!
                         ) as MediaProjection
-                    mView.findViewById<View>(R.id.start_recording).setOnClickListener {
+                    popupWindowBinding.startRecording.setOnClickListener {
+                        popupWindowBinding.startRecording.colorFilter = ColorMatrixColorFilter(
+                            ColorMatrix().apply { setSaturation(0f)})
+                        popupWindowBinding.startRecording.isEnabled = false
+                        popupWindowBinding.stopRecording.colorFilter = ColorMatrixColorFilter(
+                            ColorMatrix().apply { setSaturation(1f)})
+                        popupWindowBinding.stopRecording.isEnabled = true
                         startAudioCapture()
                         setAirbnbAnimation(R.raw.mic, R.string.listen)
                     }
-                    mView.findViewById<View>(R.id.stop_recording).setOnClickListener {
+                    popupWindowBinding.stopRecording.setOnClickListener {
+                        popupWindowBinding.startRecording.colorFilter = ColorMatrixColorFilter(
+                            ColorMatrix().apply { setSaturation(1f)})
+                        popupWindowBinding.startRecording.isEnabled = true
+                        popupWindowBinding.stopRecording.colorFilter = ColorMatrixColorFilter(
+                            ColorMatrix().apply { setSaturation(0f)})
+                        popupWindowBinding.stopRecording.isEnabled = false
                         setAirbnbAnimation(R.raw.process, R.string.process)
                         stopAudioCapture()
                     }
-                    mView.findViewById<View>(R.id.close_window).setOnClickListener {
+                    popupWindowBinding.closeWindow.setOnClickListener {
                         stopSelf()
                     }
                     START_STICKY
@@ -145,7 +173,7 @@ class ForegroundService : Service() {
     }
 
     fun dragAndDrop() {
-        mView.setOnTouchListener { v, event ->
+        popupWindowBinding.root.setOnTouchListener { v, event ->
             if (event.action == MotionEvent.ACTION_MOVE || event.action == MotionEvent.ACTION_DOWN) {
                 var xOffset = v.width / 2
                 var yOffset = v.height / 2
@@ -162,7 +190,7 @@ class ForegroundService : Service() {
                     PixelFormat.TRANSLUCENT
                 )
                 params.gravity = Gravity.TOP or Gravity.START
-                mWindowManager.updateViewLayout(mView, params);
+                mWindowManager.updateViewLayout(popupWindowBinding.root, params);
                 return@setOnTouchListener true
             }
             return@setOnTouchListener false
@@ -262,13 +290,134 @@ class ForegroundService : Service() {
                     object : AsyncTask<String, Void, String>() {
                         override fun doInBackground(vararg params: String): String {
                             val filePath = params[0]
-                            AcrCloudRecognizer.configRecognizer(filePath)
-                            return ""
+                            val response = AcrCloudRecognizer.configRecognizer(filePath)
+                            return response!!
                         }
 
                         override fun onPostExecute(result: String) {
+                            Log.d("response",result)
+                            popupWindowBinding.startRecording.colorFilter = ColorMatrixColorFilter(
+                                ColorMatrix().apply { setSaturation(0f)})
+                            popupWindowBinding.startRecording.isEnabled = false
+                            popupWindowBinding.stopRecording.colorFilter = ColorMatrixColorFilter(
+                                ColorMatrix().apply { setSaturation(0f)})
+                            popupWindowBinding.stopRecording.isEnabled = false
 
-                            Toast.makeText(this@ForegroundService, "API CALL SENT", Toast.LENGTH_LONG).show()
+                            try {
+                                val jsonResponse = JSONObject(result)
+                                val msg = jsonResponse.getJSONObject("status").getString("msg")
+                                if (!msg.equals("Success")) {
+                                    popupWindowBinding.statusTextView.setTextColor(resources.getColor(R.color.red))
+                                    setAirbnbAnimation(R.raw.failed,R.string.sorry)
+                                } else {
+                                    var spotifyAlbumId: String? = null
+                                    var deezerAlbumId: String? = null
+                                    var youtubeVideoId: String? = null
+                                    var title:String? = null
+                                    var label:String? = null
+                                    var album:String? = null
+
+                                    val musicArray = jsonResponse.getJSONObject("metadata").getJSONArray("music")
+                                    if (musicArray.length() > 0) {
+                                        val musicObject = musicArray.getJSONObject(0)
+                                         label = musicObject.getString("label")
+                                         title = musicObject.getString("title")
+                                         album = musicObject.getJSONObject("album").getString("name")
+
+                                        val externalMetadata = musicObject.optJSONObject("external_metadata")
+                                        if (externalMetadata != null) {
+                                            val spotifyMetadata = externalMetadata.optJSONObject("spotify")
+                                            if (spotifyMetadata != null) {
+                                                val spotifyAlbum = spotifyMetadata.optJSONObject("track")
+                                                spotifyAlbumId = spotifyAlbum?.getString("id")
+                                            }
+
+                                            val deezerMetadata = externalMetadata.optJSONObject("deezer")
+                                            if (deezerMetadata != null) {
+                                                val deezerAlbum = deezerMetadata.optJSONObject("album")
+                                                deezerAlbumId = deezerAlbum?.getString("id")
+                                            }
+
+                                            val youtubeMetadata = externalMetadata.optJSONObject("youtube")
+                                            if (youtubeMetadata != null) {
+                                                youtubeVideoId = youtubeMetadata.getString("vid")
+                                            }
+
+                                        }
+
+                                    }
+                                    popupWindowBinding.animWindow.alpha = 0f
+                                    popupWindowBinding.resultWindow.alpha = 1f
+                                    popupWindowBinding.statusTextView.text = "Success, here are the results!"
+                                    if(spotifyAlbumId == null) {
+                                        popupWindowBinding.spotifyResult.colorFilter = ColorMatrixColorFilter(
+                                            ColorMatrix().apply { setSaturation(0f)})
+                                        popupWindowBinding.spotifyResult.isEnabled = false
+                                    }
+                                    if(youtubeVideoId == null) {
+                                        popupWindowBinding.youtubeResult.colorFilter = ColorMatrixColorFilter(
+                                            ColorMatrix().apply { setSaturation(0f)})
+                                        popupWindowBinding.youtubeResult.isEnabled = false
+                                    }
+
+                                    if(title == null) {
+                                        popupWindowBinding.googleResult.colorFilter = ColorMatrixColorFilter(
+                                            ColorMatrix().apply { setSaturation(0f)})
+                                        popupWindowBinding.googleResult.isEnabled = false
+                                    }
+
+                                    popupWindowBinding.googleResult.setOnClickListener {
+                                        val query = "$title, $album by $label song"
+                                        val url = "https://www.google.com/search?q=${URLEncoder.encode(query, "UTF-8")}"
+                                        val intent = Intent(Intent.ACTION_VIEW)
+                                        intent.data = Uri.parse(url)
+                                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                        startActivity(intent)
+                                    }
+
+                                    popupWindowBinding.spotifyResult.setOnClickListener {
+
+                                        val uri = "spotify:track:$spotifyAlbumId"
+
+                                        // Create an intent for the Spotify app
+                                        val appIntent = Intent(Intent.ACTION_VIEW)
+                                        appIntent.data = Uri.parse(uri)
+                                        appIntent.`package` = "com.spotify.music" // Package name of the Spotify app
+                                        appIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                        // Create an intent for the Spotify web URL
+                                        val webIntent = Intent(Intent.ACTION_VIEW)
+                                        webIntent.data = Uri.parse("https://open.spotify.com/track/${spotifyAlbumId}")
+                                        webIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                        // Check if there is an app available to handle the intent
+                                        if (appIntent.resolveActivity(packageManager) != null) {
+                                            startActivity(appIntent)
+                                        } else {
+                                            // Spotify app is not installed, fallback to the web URL
+                                            startActivity(webIntent)
+                                        }
+                                    }
+
+                                    popupWindowBinding.youtubeResult.setOnClickListener {
+
+                                        val appIntent = Intent(Intent.ACTION_VIEW)
+                                        appIntent.data = Uri.parse("vnd.youtube:$youtubeVideoId")
+                                        appIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+
+                                        val webIntent = Intent(Intent.ACTION_VIEW)
+                                        webIntent.data = Uri.parse("https://www.youtube.com/watch?v=$youtubeVideoId")
+                                        webIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+
+                                        if (appIntent.resolveActivity(packageManager) != null) {
+                                            startActivity(appIntent)
+                                        } else {
+                                            startActivity(webIntent)
+                                        }
+                                    }
+                                }
+                            } catch (e: JSONException) {
+                                e.printStackTrace()
+                                Toast.makeText(this@ForegroundService,"Something went wrong! please try again..",Toast.LENGTH_SHORT).show()
+                            }
                         }
                     }.execute(wavFile.absolutePath)
 
