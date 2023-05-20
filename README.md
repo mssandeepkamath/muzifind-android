@@ -16,6 +16,5 @@
 
 <img src="https://github.com/mssandeepkamath/internal-music-recognizer/assets/90695071/3b077a1e-6c71-4041-8031-076b41dccc11" width="25%" height="25%" />
 
-❌Failed to get Base64String from PCM/WAV file.
+✅Build succesfull, getting response.
 
-🔚Archive: 17-05-23
