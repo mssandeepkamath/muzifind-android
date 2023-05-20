@@ -14,7 +14,7 @@
 
 📱Demo:
 
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/v=3y_ic5J-OYY/0.jpg)](https://www.youtube.com/watch?v=3y_ic5J-OYY)
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/3y_ic5J-OYY/0.jpg)](https://www.youtube.com/watch?v=3y_ic5J-OYY)
 
 ✅Build passed.
 
