@@ -16,6 +16,7 @@ import android.util.Base64
 import android.util.Log
 import android.view.*
 import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.airbnb.lottie.LottieAnimationView
@@ -101,8 +102,8 @@ class ForegroundService : Service() {
                         setAirbnbAnimation(R.raw.mic, R.string.listen)
                     }
                     mView.findViewById<View>(R.id.stop_recording).setOnClickListener {
-                        stopAudioCapture()
                         setAirbnbAnimation(R.raw.process, R.string.process)
+                        stopAudioCapture()
                     }
                     mView.findViewById<View>(R.id.close_window).setOnClickListener {
                         stopSelf()
@@ -119,11 +120,6 @@ class ForegroundService : Service() {
             START_NOT_STICKY
         }
     }
-
-    // for android version >=O we need to create
-    // custom notification stating
-    // foreground service is running
-
     @RequiresApi(Build.VERSION_CODES.O)
     private fun startMyOwnForeground() {
         val channelName = "Background Service"
@@ -147,7 +143,6 @@ class ForegroundService : Service() {
             .build()
         startForeground(SERVICE_ID, notification)
     }
-
 
     fun dragAndDrop() {
         mView.setOnTouchListener { v, event ->
@@ -254,7 +249,6 @@ class ForegroundService : Service() {
         audioRecord = null
         mediaProjection!!.stop()
         try {
-//            PCMToWAV(outputFile, wavFile, 1, 44100, 16)
             convertPcmToWav(outputFile.absolutePath, wavFile.absolutePath)
         } catch (ioException: IOException) {
             Log.e("wav error", ioException.toString())
@@ -263,14 +257,23 @@ class ForegroundService : Service() {
                 {
                     setAirbnbAnimation(R.raw.search, R.string.search)
                     statusText.text = resources.getString(R.string.search)
+
+                    // Execute API call in background thread using AsyncTask
+                    object : AsyncTask<String, Void, String>() {
+                        override fun doInBackground(vararg params: String): String {
+                            val filePath = params[0]
+                            AcrCloudRecognizer.configRecognizer(filePath)
+                            return ""
+                        }
+
+                        override fun onPostExecute(result: String) {
+
+                            Toast.makeText(this@ForegroundService, "API CALL SENT", Toast.LENGTH_LONG).show()
+                        }
+                    }.execute(wavFile.absolutePath)
+
                 }, 2000
             )
-//            print("**********************")
-//            print(outputFile.absolutePath)
-//            val base64String = pcmFileToBase64(outputFile.absolutePath)
-//            println(base64String)
-            stopSelf()
-
         }
 
     }
@@ -290,146 +293,12 @@ class ForegroundService : Service() {
         return bytes
     }
 
-    companion object {
-        private const val LOG_TAG = "AudioCaptureService"
-        private const val SERVICE_ID = 123
-        private const val NOTIFICATION_CHANNEL_ID = "AudioCapture channel"
-
-        private const val NUM_SAMPLES_PER_READ = 1024
-        private const val BYTES_PER_SAMPLE = 2 // 2 bytes since we hardcoded the PCM 16-bit format
-        private const val BUFFER_SIZE_IN_BYTES = NUM_SAMPLES_PER_READ * BYTES_PER_SAMPLE
-
-        const val ACTION_START = "AudioCaptureService:Start"
-        const val ACTION_STOP = "AudioCaptureService:Stop"
-        const val EXTRA_RESULT_DATA = "AudioCaptureService:Extra:ResultData"
-    }
-
-    @Throws(IOException::class)
-    fun PCMToWAV(
-        input: File,
-        output: File?,
-        channelCount: Int,
-        sampleRate: Int,
-        bitsPerSample: Int,
-    ) {
-        val inputSize = input.length().toInt()
-        FileOutputStream(output).use { encoded ->
-            // WAVE RIFF header
-            writeToOutput(encoded, "RIFF") // chunk id
-            writeToOutput(encoded, 36 + inputSize) // chunk size
-            writeToOutput(encoded, "WAVE") // format
-            // SUB CHUNK 1 (FORMAT)
-            writeToOutput(encoded, "fmt ") // subchunk 1 id
-            writeToOutput(encoded, 16) // subchunk 1 size
-            writeToOutput(encoded, 1.toShort()) // audio format (1 = PCM)
-            writeToOutput(encoded, channelCount.toShort()) // number of channelCount
-            writeToOutput(encoded, sampleRate) // sample rate
-            writeToOutput(encoded, sampleRate * channelCount * bitsPerSample / 8) // byte rate
-            writeToOutput(encoded, (channelCount * bitsPerSample / 8).toShort()) // block align
-            writeToOutput(encoded, bitsPerSample.toShort()) // bits per sample
-            // SUB CHUNK 2 (AUDIO DATA)
-            writeToOutput(encoded, "data") // subchunk 2 id
-            writeToOutput(encoded, inputSize) // subchunk 2 size
-            copy(FileInputStream(input), encoded)
-        }
-    }
-
-    private val TRANSFER_BUFFER_SIZE = 10 * 1024
-
-    @Throws(IOException::class)
-    fun writeToOutput(output: OutputStream, data: String) {
-        for (element in data) {
-            output.write(element.toInt())
-        }
-    }
-
-    @Throws(IOException::class)
-    fun writeToOutput(output: OutputStream, data: Int) {
-        output.write(data shr 0)
-        output.write(data shr 8)
-        output.write(data shr 16)
-        output.write(data shr 24)
-    }
-
-    @Throws(IOException::class)
-    fun writeToOutput(output: OutputStream, data: Short) {
-        output.write(data.toInt() shr 0)
-        output.write(data.toInt() shr 8)
-    }
-
-    @Throws(IOException::class)
-    fun copy(source: InputStream, output: OutputStream): Long {
-        return copy(source, output, TRANSFER_BUFFER_SIZE)
-    }
-
-    @Throws(IOException::class)
-    fun copy(source: InputStream, output: OutputStream, bufferSize: Int): Long {
-        var read = 0L
-        val buffer = ByteArray(bufferSize)
-        var n: Int
-        while (source.read(buffer).also { n = it } != -1) {
-            output.write(buffer, 0, n)
-            read += n.toLong()
-        }
-        return read
-    }
-
     private fun setAirbnbAnimation(animId: Int, textId: Int) {
         animationView.setAnimation(animId)
         animationView.playAnimation()
         statusText.text = resources.getString(textId)
     }
 
-    fun pcmToByteArray(filePath: String): ByteArray {
-        // Create a File object from the PCM file path
-        val pcmFile = File(filePath)
-
-        // Create a byte array output stream to store the converted PCM data
-        val outputStream = ByteArrayOutputStream()
-        try {
-            // Create a FileInputStream to read the PCM file
-            val inputStream = FileInputStream(pcmFile)
-
-            // Define a buffer to read the PCM data
-            val buffer = ByteArray(1024 * 2)
-            var bytesRead: Int
-
-            // Read PCM data and write to the output stream
-            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                outputStream.write(buffer, 0, bytesRead)
-            }
-
-            // Close the input stream
-            inputStream.close()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-
-        // Retrieve the byte array
-        val byteArray = outputStream.toByteArray()
-
-        // Close the ByteArrayOutputStream
-        try {
-            outputStream.close()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-        return byteArray
-    }
-
-    fun convertToBase64(byteArray: ByteArray): String {
-        val base64String = Base64.encodeToString(byteArray, Base64.NO_WRAP)
-        return base64String
-    }
-
-    fun byteArrayToHexString(byteArray: ByteArray): String {
-        val stringBuilder = StringBuilder()
-        for (byte in byteArray) {
-            val hex = String.format("%02X", byte.toInt() and 0xFF)
-            stringBuilder.append(hex)
-        }
-        return stringBuilder.toString()
-    }
 
     fun convertPcmToWav(pcmFilePath: String, wavFilePath: String) {
 
@@ -528,47 +397,20 @@ class ForegroundService : Service() {
         outputStream.write(header)
     }
 
+    companion object {
+        private const val LOG_TAG = "AudioCaptureService"
+        private const val SERVICE_ID = 123
+        private const val NOTIFICATION_CHANNEL_ID = "AudioCapture channel"
 
-    fun wavFileToBase64(wavFilePath: String): String {
-        try {
-            val wavFile = FileInputStream(wavFilePath)
-            val wavData = ByteArray(wavFile.available())
-            wavFile.read(wavData)
-            wavFile.close()
+        private const val NUM_SAMPLES_PER_READ = 1024
+        private const val BYTES_PER_SAMPLE = 2 // 2 bytes since we hardcoded the PCM 16-bit format
+        private const val BUFFER_SIZE_IN_BYTES = NUM_SAMPLES_PER_READ * BYTES_PER_SAMPLE
 
-            val base64String = Base64.encodeToString(wavData, Base64.DEFAULT)
-            return base64String
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-
-        return ""
+        const val ACTION_START = "AudioCaptureService:Start"
+        const val ACTION_STOP = "AudioCaptureService:Stop"
+        const val EXTRA_RESULT_DATA = "AudioCaptureService:Extra:ResultData"
     }
 
-    fun pcmFileToBase64(pcmFilePath: String): String {
-        try {
-            val pcmFile = File(pcmFilePath)
-            val inputStream = FileInputStream(pcmFile)
-            val bufferedInputStream = BufferedInputStream(inputStream)
-            val outputStream = ByteArrayOutputStream()
 
-            val buffer = ByteArray(4096)
-            var bytesRead: Int
-            while (bufferedInputStream.read(buffer).also { bytesRead = it } != -1) {
-                outputStream.write(buffer, 0, bytesRead)
-            }
-
-            outputStream.flush()
-            outputStream.close()
-            bufferedInputStream.close()
-
-            val pcmData = outputStream.toByteArray()
-            val base64Data = Base64.encodeToString(pcmData, Base64.NO_PADDING)
-            return base64Data
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        return ""
-    }
 
 }
