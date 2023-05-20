@@ -3,4 +3,6 @@
     <string name="listen">Recording music....</string>
     <string name="process">Processing music....</string>
     <string name="search">Recognizing music....</string>
+    <string name="sorry">Sorry, no matches found!</string>
+    <string name="start">Play and Stop the music!</string>
 </resources>

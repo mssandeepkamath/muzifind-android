@@ -154,11 +154,11 @@ public class AcrCloudRecognizer {
         return res;
     }
 
-    public static void configRecognizer(String filePath) {
+    public static String configRecognizer(String filePath) {
         File file = new File(filePath);
         byte[] buffer = new byte[1024 * 1024];
         if (!file.exists()) {
-            return;
+            return "";
         }
         FileInputStream fin = null;
         int bufferLen = 0;
@@ -179,12 +179,12 @@ public class AcrCloudRecognizer {
         System.out.println("bufferLen=" + bufferLen);
 
         if (bufferLen <= 0)
-            return;
+            return "";
 
         byte[] postDatas = new byte[bufferLen];
         System.arraycopy(buffer, 0, postDatas, 0, bufferLen);
         AcrCloudRecognizer a = new AcrCloudRecognizer();
-        String result = a.recognize("host", "access-key", "secret-key", postDatas, "audio", 10000);
-        System.out.println(result);
+        String result = a.recognize("identify-ap-southeast-1.acrcloud.com", "a5e15e1c4c51f378ba6be379057bf481", "rjaZBjSyfKknOdwlGAvXVblOcUVFpMXcmn6Gkx6V", postDatas, "audio", 10000);
+        return result;
     }
 }
