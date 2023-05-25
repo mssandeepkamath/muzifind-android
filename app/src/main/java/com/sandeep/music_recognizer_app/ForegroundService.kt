@@ -56,7 +56,6 @@ class ForegroundService : Service() {
     private lateinit var secretKey:String
 
 
-
     override fun onCreate() {
         super.onCreate()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) startMyOwnForeground() else startForeground(
