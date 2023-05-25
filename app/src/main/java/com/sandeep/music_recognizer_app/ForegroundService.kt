@@ -7,6 +7,7 @@ import android.content.Intent
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.PixelFormat
+import android.icu.text.StringPrepParseException
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioPlaybackCaptureConfiguration
@@ -16,8 +17,6 @@ import android.media.projection.MediaProjectionManager
 import android.media.session.PlaybackState.ACTION_STOP
 import android.net.Uri
 import android.os.*
-import android.provider.CalendarContract
-import android.util.Base64
 import android.util.Log
 import android.view.*
 import android.widget.TextView
@@ -52,6 +51,9 @@ class ForegroundService : Service() {
     private lateinit var popupWindowBinding: PopupWindowBinding
     private var isStarted = false
     private var isStopped = false
+    private lateinit var host:String
+    private lateinit var accessKey:String
+    private lateinit var secretKey:String
 
 
     override fun onCreate() {
@@ -106,6 +108,9 @@ class ForegroundService : Service() {
         popupWindowBinding.stopRecording.isEnabled = false
         setAirbnbAnimation(R.raw.startup,R.string.start)
         return if (intent != null) {
+            host = intent.getStringExtra("host")!!
+            accessKey = intent.getStringExtra("accessKey")!!
+            secretKey = intent.getStringExtra("secretKey")!!
             when (intent.action) {
                 ACTION_START -> {
                     mediaProjection =
@@ -125,8 +130,8 @@ class ForegroundService : Service() {
                     }
                     popupWindowBinding.stopRecording.setOnClickListener {
                         popupWindowBinding.startRecording.colorFilter = ColorMatrixColorFilter(
-                            ColorMatrix().apply { setSaturation(1f)})
-                        popupWindowBinding.startRecording.isEnabled = true
+                            ColorMatrix().apply { setSaturation(0f)})
+                        popupWindowBinding.startRecording.isEnabled = false
                         popupWindowBinding.stopRecording.colorFilter = ColorMatrixColorFilter(
                             ColorMatrix().apply { setSaturation(0f)})
                         popupWindowBinding.stopRecording.isEnabled = false
@@ -162,10 +167,10 @@ class ForegroundService : Service() {
         val notificationBuilder: NotificationCompat.Builder =
             NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
         val notification: Notification = notificationBuilder.setOngoing(true)
-            .setContentTitle("Service running")
-            .setContentText("Displaying over other apps") // this is important, otherwise the notification will show the way
+            .setContentTitle("Audio Recognizer service started..")
+            .setContentText("Displaying over other apps for music recognition!") // this is important, otherwise the notification will show the way
             // you want i.e. it will show some default notification
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.mu)
             .setPriority(NotificationManager.IMPORTANCE_MIN)
             .setCategory(Notification.CATEGORY_SERVICE)
             .build()
@@ -290,7 +295,7 @@ class ForegroundService : Service() {
                     object : AsyncTask<String, Void, String>() {
                         override fun doInBackground(vararg params: String): String {
                             val filePath = params[0]
-                            val response = AcrCloudRecognizer.configRecognizer(filePath)
+                            val response = AcrCloudRecognizer.configRecognizer(filePath,host,accessKey,secretKey)
                             return response!!
                         }
 
@@ -416,7 +421,7 @@ class ForegroundService : Service() {
                                 }
                             } catch (e: JSONException) {
                                 e.printStackTrace()
-                                Toast.makeText(this@ForegroundService,"Something went wrong! please try again..",Toast.LENGTH_SHORT).show()
+                                Toast.makeText(this@ForegroundService,"Service is no more available! please try again later..",Toast.LENGTH_SHORT).show()
                             }
                         }
                     }.execute(wavFile.absolutePath)

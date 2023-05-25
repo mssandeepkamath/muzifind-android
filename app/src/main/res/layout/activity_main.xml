@@ -1,23 +1,169 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#FFFFFF"
-    tools:context=".MainActivity">
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/black"
+        tools:context=".MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Mu-parse, The music recognizer"
-        android:textSize="@dimen/_18sdp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:fontFamily="sans-serif"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            >
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/_2sdp"
+                app:cardBackgroundColor="#130142"
+                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.CardView"
+                app:cardElevation="@dimen/_2sdp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="@dimen/_50sdp"
+                        android:src="@drawable/mu"
+                        android:layout_gravity="center"
+                        android:scaleType="centerInside"
+                        android:layout_marginTop="@dimen/_5sdp"
+                        />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="@dimen/_2sdp"
+                        android:fontFamily="sans-serif"
+                        android:padding="@dimen/_4sdp"
+                        android:text="MuParse"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/_14sdp"
+                        android:textStyle="bold"
+                        />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                       android:layout_marginHorizontal="@dimen/_10sdp"
+                        android:layout_marginVertical="@dimen/_5sdp"
+                        android:fontFamily="sans-serif"
+                        android:text="@string/about_us"
+                        android:textColor="#A0A0A0"
+                        android:justificationMode="inter_word"
+                        android:lineSpacingExtra="2sp"
+                        android:textSize="@dimen/_14sdp"
+                        android:textStyle="normal"
+                        />
+
+
+                    <Button
+                        android:id="@+id/btnCasting"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/_37sdp"
+                        android:text="Allow Casting Permission"
+                        android:layout_marginHorizontal="@dimen/_15sdp"
+                        android:layout_marginBottom="@dimen/_10sdp"
+                        android:layout_marginTop="@dimen/_10sdp"
+                        android:textStyle="normal"
+                        android:background="@drawable/card_border"
+                        android:backgroundTint="#89D2FF"
+                        android:textSize="@dimen/_12sdp"
+                        android:textColor="@color/white"
+                        />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="@dimen/_5sdp"
+                        android:layout_marginBottom="@dimen/_10sdp"
+                        android:fontFamily="sans-serif"
+                        android:text="Info: MuParse doesn't access your data"
+                        android:textColor="#88231C"
+                        android:textSize="@dimen/_12sdp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+
+            </com.google.android.material.card.MaterialCardView>
+
+<LinearLayout
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:weightSum="4"
+    android:layout_gravity="center"
+    android:layout_marginTop="@dimen/_10sdp"
+    >
+
+    <ImageView
+        android:id="@+id/insta"
+        android:layout_width="@dimen/_35sdp"
+        android:layout_height="@dimen/_35sdp"
+        android:src="@drawable/ig"
+        android:layout_weight="1"
+        android:scaleType="centerInside"
+        android:layout_marginHorizontal="@dimen/_10sdp"
+        />
+
+    <ImageView
+        android:id="@+id/git"
+        android:layout_width="@dimen/_35sdp"
+        android:layout_height="@dimen/_35sdp"
+        android:src="@drawable/gh"
+        android:layout_weight="1"
+        android:scaleType="centerInside"
+        android:layout_marginHorizontal="@dimen/_10sdp"
+        />
+
+    <ImageView
+        android:id="@+id/linked"
+        android:layout_width="@dimen/_35sdp"
+        android:layout_height="@dimen/_35sdp"
+        android:src="@drawable/li"
+        android:layout_weight="1"
+        android:scaleType="centerInside"
+        android:layout_marginHorizontal="@dimen/_10sdp"
+        />
+
+    <ImageView
+        android:id="@+id/play"
+        android:layout_width="@dimen/_35sdp"
+        android:layout_height="@dimen/_35sdp"
+        android:src="@drawable/gps"
+        android:layout_weight="1"
+        android:scaleType="centerInside"
+        android:layout_marginHorizontal="@dimen/_10sdp"
+        />
+</LinearLayout>
+
+            <com.airbnb.lottie.LottieAnimationView
+                android:id="@+id/animation_view_main"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_250sdp"
+                android:scaleType="centerCrop"
+                android:background="@color/black"
+                android:layout_gravity="center"
+                app:lottie_loop="true"
+                app:lottie_autoPlay="true"
+                android:layout_marginTop="@dimen/_2sdp"
+                app:lottie_speed="0.5"
+                app:lottie_rawRes="@raw/night" />
+
+        </LinearLayout>
+
+
+
+
+
+    </ScrollView>
+
