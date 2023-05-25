@@ -20,6 +20,8 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class AcrCloudRecognizer {
 
+
+
     private String encodeBase64(byte[] bstr) {
         Base64 base64 = new Base64();
         return new String(base64.encode(bstr));
@@ -154,7 +156,7 @@ public class AcrCloudRecognizer {
         return res;
     }
 
-    public static String configRecognizer(String filePath) {
+    public static String configRecognizer(String filePath,String host, String accessKey, String secretKey) {
         File file = new File(filePath);
         byte[] buffer = new byte[1024 * 1024];
         if (!file.exists()) {
@@ -184,7 +186,7 @@ public class AcrCloudRecognizer {
         byte[] postDatas = new byte[bufferLen];
         System.arraycopy(buffer, 0, postDatas, 0, bufferLen);
         AcrCloudRecognizer a = new AcrCloudRecognizer();
-        String result = a.recognize("identify-ap-southeast-1.acrcloud.com", "a5e15e1c4c51f378ba6be379057bf481", "rjaZBjSyfKknOdwlGAvXVblOcUVFpMXcmn6Gkx6V", postDatas, "audio", 10000);
+        String result = a.recognize(host, accessKey, secretKey, postDatas, "audio", 10000);
         return result;
     }
 }
