@@ -12,7 +12,13 @@ Muparse is an android app that functions by capturing and analyzing internal aud
 
 ## Architecture:
 
-<img width="500" src="https://github.com/mssandeepkamath/muparse-android/assets/90695071/b7998986-e1c1-4e25-8b9c-57f4b34b2a02" align="center" alt="Untitled-designbear"  border="0">
+<img width="500" src="https://github.com/mssandeepkamath/muparse-android/assets/90695071/b7998986-e1c1-4e25-8b9c-57f4b34b2a02" align="center" alt="architecture"  border="0">
+
+## Usage:
+
+* Setup firebase app and add google-service.json to root.
+* Sign up to ACR cloud for secret-key, access-key & bucket information.
+* Contribute.
 
 
 
