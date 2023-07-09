@@ -6,13 +6,13 @@ Muparse is an android app that functions by capturing and analyzing internal aud
 
 ### [MuParse - Play Store](https://play.google.com/store/apps/details?id=com.sandeep.music_recognizer_app&hl=en&gl=IN)
 
-## Demo:
-
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/nNGeyQrl9QY/0.jpg)](https://www.youtube.com/watch?v=nNGeyQrl9QY)
-
 ## Architecture:
 
 <img width="500" src="https://github.com/mssandeepkamath/muparse-android/assets/90695071/d3c4feb4-2586-4a4d-b521-6810f61659b3" align="center" alt="architecture"  border="0">
+
+## Demo:
+
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/nNGeyQrl9QY/0.jpg)](https://www.youtube.com/watch?v=nNGeyQrl9QY)
 
 ## Usage:
 
