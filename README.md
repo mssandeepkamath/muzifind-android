@@ -12,7 +12,7 @@ Muparse is an android app that functions by capturing and analyzing internal aud
 
 ## Demo:
 
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/nNGeyQrl9QY/0.jpg)](https://www.youtube.com/watch?v=nNGeyQrl9QY)
+[Youtube](https://www.youtube.com/watch?v=nNGeyQrl9QY)
 
 ## Usage:
 
