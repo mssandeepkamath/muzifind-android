@@ -10,10 +10,6 @@ Muparse is an android app that functions by capturing and analyzing internal aud
 
 <img width="500" src="https://github.com/mssandeepkamath/muparse-android/assets/90695071/d3c4feb4-2586-4a4d-b521-6810f61659b3" align="center" alt="architecture"  border="0">
 
-## Demo:
-
-[Youtube](https://www.youtube.com/watch?v=nNGeyQrl9QY)
-
 ## Usage:
 
 * Setup firebase app and add google-service.json to root.
