@@ -17,6 +17,10 @@ Muparse is an android app that functions by capturing and analyzing internal aud
 ## Usage:
 
 * Setup firebase app and add google-service.json to root.
+* Setup firebase realtime database as below:
+  
+<img width="500" src="https://github.com/mssandeepkamath/muparse-android/assets/90695071/c5624ba4-a6fd-4cd5-9733-abd1d4f43778" align="center" alt="architecture"  border="0">
+
 * Sign up to ACR cloud for secret-key, access-key & bucket information.
 * Contribute.
 
