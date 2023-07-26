@@ -1,5 +1,9 @@
 ## Recognize the reel song, by listening to the internal audio of phone
 
+
+<a href="https://codeclimate.com/github/mssandeepkamath/muparse-android/maintainability"><img src="https://api.codeclimate.com/v1/badges/ff1d96175429d4e716d3/maintainability" /></a>
+<a href="https://codeclimate.com/github/mssandeepkamath/muparse-android/test_coverage"><img src="https://api.codeclimate.com/v1/badges/ff1d96175429d4e716d3/test_coverage" /></a>
+
 Muparse is an android app that functions by capturing and analyzing internal audio from various applications such as Instagram reels and YouTube shorts. It effectively identifies the audio being played and offers convenient links to Spotify, YouTube, and the web for further exploration
 
 ## Live:
