@@ -1,9 +1,9 @@
 <resources>
-    <string name="app_name">MuParse</string>
+    <string name="app_name">MuziFind</string>
     <string name="listen">Recording music....</string>
     <string name="process">Processing music....</string>
     <string name="search">Recognizing music....</string>
     <string name="sorry">Sorry, no matches found!</string>
     <string name="start">Play and Stop to recognize</string>
-    <string name="about_us"><![CDATA[Muparse is an android app that functions by capturing and analyzing internal audio from various applications such as Instagram reels and YouTube shorts. It effectively identifies the audio being played and offers convenient links to Spotify, YouTube, and the web for further exploration.\n\nPermissions to allow:\n• Appear on top\n• Audio record\n• Screen Recording]]></string>
+    <string name="about_us"><![CDATA[MuziFind functions by capturing and analyzing internal audio from various applications such as Instagram reels and YouTube shorts. It effectively identifies the audio being played and offers convenient links to Spotify, YouTube, and the web for further exploration.\n\nPermissions to allow:\n• Appear on top\n• Audio record\n• Screen Recording]]></string>
 </resources>

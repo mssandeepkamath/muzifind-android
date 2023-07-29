@@ -186,7 +186,7 @@ public class AcrCloudRecognizer {
         byte[] postDatas = new byte[bufferLen];
         System.arraycopy(buffer, 0, postDatas, 0, bufferLen);
         AcrCloudRecognizer a = new AcrCloudRecognizer();
-        String result = a.recognize(host, accessKey, secretKey, postDatas, "audio", 10000);
+        String result = a.recognize(host, accessKey, secretKey, postDatas, "audio",4000);
         return result;
     }
 }

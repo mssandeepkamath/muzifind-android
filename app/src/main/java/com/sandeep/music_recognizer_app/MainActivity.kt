@@ -3,24 +3,30 @@ package com.sandeep.music_recognizer_app
 
 
 
-import android.app.ActionBar.LayoutParams
 import android.app.Activity
+import android.app.Application
 import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Context.MEDIA_PROJECTION_SERVICE
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
-import android.graphics.ColorMatrix
-import android.graphics.ColorMatrixColorFilter
 import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.view.ViewGroup
+import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.core.content.ContextCompat
+import com.google.android.gms.ads.*
+import com.google.android.gms.ads.appopen.AppOpenAd
+import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -28,32 +34,44 @@ import com.google.firebase.database.ValueEventListener
 import com.sandeep.music_recognizer_app.databinding.ActivityMainBinding
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(){
 
-
+    private val  LOG_TAG = "AppOpenAdManager"
+    private val  AD_UNIT_ID = "ca-app-pub-5634416739025689/8429368052"
     private  var data: Intent? = null
     private lateinit var mediaProjectionManager: MediaProjectionManager
     private var isServiceStarted = false
     private lateinit var activityMainBinding : ActivityMainBinding
     val database = FirebaseDatabase.getInstance()
     val secretKeysRef = database.getReference("secret_keys")
+    private var interstitialAd: InterstitialAd? = null
+    private var adIsLoading: Boolean = false
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        window.setBackgroundDrawable(null)
         activityMainBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(activityMainBinding.root)
+        loadAd()
+        super.onCreate(savedInstanceState)
+        window.setBackgroundDrawable(null)
+
+
+        activityMainBinding.btnCasting.isEnabled = false
+        activityMainBinding.btnCasting.text = "Service Loading...."
+        activityMainBinding.btnCasting.setBackgroundColor(Color.GRAY)
+        MobileAds.initialize(this) {}
 
         if(checkOverlayPermission())
         {
             activityMainBinding.btnCasting.setOnClickListener {
-                if(isRecordAudioPermissionGranted())
+                if(isRecordAudioPermissionGranted(this))
                 {
                     activityMainBinding.btnCasting.setBackgroundColor(Color.GRAY)
                     activityMainBinding.btnCasting.isEnabled = false
                     activityMainBinding.btnCasting.text = "Switch to other apps!"
+                    startCapturing(this)
                 }
-                startCapturing()
+
             }
         }
         else
@@ -108,8 +126,8 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
     }
-    private fun startCapturing() {
-        if (!isRecordAudioPermissionGranted()) {
+    public fun startCapturing(context: Context) {
+        if (!isRecordAudioPermissionGranted(context)) {
             requestRecordAudioPermission()
         } else {
             startMediaProjectionRequest()
@@ -132,6 +150,7 @@ class MainActivity : AppCompatActivity() {
         when (requestCode) {
             MEDIA_PROJECTION_REQUEST_CODE -> {
                 if (resultCode == RESULT_OK) {
+                    showInterstitial()
                     startOverlayService(data!!)
                 } else {
                     activityMainBinding.btnCasting.setBackgroundColor(resources.getColor(R.color.purple_500))
@@ -145,7 +164,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // method for starting the service
-    private  fun startOverlayService(data:Intent) {
+    public  fun startOverlayService(data:Intent) {
             // start the service based on the android version
         Toast.makeText(this@MainActivity,"Starting service, Please wait",Toast.LENGTH_SHORT).show()
         secretKeysRef.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -195,9 +214,9 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private fun isRecordAudioPermissionGranted(): Boolean {
+    private fun isRecordAudioPermissionGranted(context:Context): Boolean {
         return ContextCompat.checkSelfPermission(
-            this,
+            context,
             android.Manifest.permission.RECORD_AUDIO
         ) == PackageManager.PERMISSION_GRANTED
     }
@@ -224,5 +243,62 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+    private fun loadAd() {
+        var adRequest = AdRequest.Builder().build()
+
+        activityMainBinding.adView.loadAd(adRequest)
+
+        InterstitialAd.load(
+            this,
+            AD_UNIT_ID,
+            adRequest,
+            object : InterstitialAdLoadCallback() {
+                override fun onAdFailedToLoad(adError: LoadAdError) {
+                    Log.d(LOG_TAG, adError.message)
+                    interstitialAd = null
+                    adIsLoading = false
+                    val error =
+                        "domain: ${adError.domain}, code: ${adError.code}, " + "message: ${adError.message}"
+                }
+
+                override fun onAdLoaded(ad: InterstitialAd) {
+                    Log.d(LOG_TAG, "Ad was loaded.")
+                    activityMainBinding.btnCasting.setBackgroundColor(resources.getColor(R.color.purple_500))
+                    activityMainBinding.btnCasting.isEnabled = true
+                    activityMainBinding.btnCasting.text = "ALLOW CASTING PERMISSION"
+                    interstitialAd = ad
+                    adIsLoading = false
+                }
+            }
+        )
+    }
+    private fun showInterstitial() {
+        if (interstitialAd != null) {
+            interstitialAd?.fullScreenContentCallback =
+                object : FullScreenContentCallback() {
+                    override fun onAdDismissedFullScreenContent() {
+                        Log.d(LOG_TAG, "Ad was dismissed.")
+                        // Don't forget to set the ad reference to null so you
+                        // don't show the ad a second time.
+                        interstitialAd = null
+                    }
+
+                    override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                        Log.d(LOG_TAG, "Ad failed to show.")
+                        interstitialAd = null
+                    }
+
+                    override fun onAdShowedFullScreenContent() {
+                        Log.d(LOG_TAG, "Ad showed fullscreen content.")
+
+                    }
+                }
+            interstitialAd?.show(this)
+        } else {
+
+        }
+    }
+
+
 
 }
