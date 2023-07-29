@@ -7,14 +7,12 @@ import android.content.Intent
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.PixelFormat
-import android.icu.text.StringPrepParseException
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioPlaybackCaptureConfiguration
 import android.media.AudioRecord
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
-import android.media.session.PlaybackState.ACTION_STOP
 import android.net.Uri
 import android.os.*
 import android.util.Log
@@ -142,6 +140,7 @@ class ForegroundService : Service() {
                     popupWindowBinding.closeWindow.setOnClickListener {
                         stopSelf()
                     }
+
                     START_STICKY
                 }
                 ACTION_STOP -> {
@@ -340,7 +339,7 @@ class ForegroundService : Service() {
 
                                             val deezerMetadata = externalMetadata.optJSONObject("deezer")
                                             if (deezerMetadata != null) {
-                                                val deezerAlbum = deezerMetadata.optJSONObject("album")
+                                                val deezerAlbum = deezerMetadata.optJSONObject("track")
                                                 deezerAlbumId = deezerAlbum?.getString("id")
                                             }
 
@@ -421,7 +420,7 @@ class ForegroundService : Service() {
                                     }
                                 }
                             } catch (e: JSONException) {
-                                e.printStackTrace()
+                                Log.e("Errror", e.toString())
                                 Toast.makeText(this@ForegroundService,"Service is no more available! please try again later..",Toast.LENGTH_SHORT).show()
                             }
                         }
@@ -564,6 +563,15 @@ class ForegroundService : Service() {
         const val ACTION_START = "AudioCaptureService:Start"
         const val ACTION_STOP = "AudioCaptureService:Stop"
         const val EXTRA_RESULT_DATA = "AudioCaptureService:Extra:ResultData"
+    }
+
+    private fun reopenApp() {
+        val intent = Intent(this, MainActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
+        val stackBuilder = TaskStackBuilder.create(this)
+        stackBuilder.addNextIntentWithParentStack(intent)
+        stackBuilder.startActivities()
     }
 
 
