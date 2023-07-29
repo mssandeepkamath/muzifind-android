@@ -4,11 +4,11 @@
 <a href="https://codeclimate.com/github/mssandeepkamath/muparse-android/maintainability"><img src="https://api.codeclimate.com/v1/badges/ff1d96175429d4e716d3/maintainability" /></a>
 <a href="https://codeclimate.com/github/mssandeepkamath/muparse-android/test_coverage"><img src="https://api.codeclimate.com/v1/badges/ff1d96175429d4e716d3/test_coverage" /></a>
 
-Muparse is an android app that functions by capturing and analyzing internal audio from various applications such as Instagram reels and YouTube shorts. It effectively identifies the audio being played and offers convenient links to Spotify, YouTube, and the web for further exploration
+MuziFind is an android app that functions by capturing and analyzing internal audio from various applications such as Instagram reels and YouTube shorts. It effectively identifies the audio being played and offers convenient links to Spotify, YouTube, and the web for further exploration
 
 ## Live:
 
-### [MuParse - Play Store](https://play.google.com/store/apps/details?id=com.sandeep.music_recognizer_app&hl=en&gl=IN)
+### [MuziFind - Play Store](https://play.google.com/store/apps/details?id=com.sandeep.music_recognizer_app&hl=en&gl=IN)
 
 ## Demo:
 
