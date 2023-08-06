@@ -1,20 +1,35 @@
-## Recognize the the reel song, by listening to the internal audio of phone
+## Recognize the reel song, by listening to the internal audio of phone
 
-🎉About: An Android application, which listens to the instagram reel that's being played, recognizes the audio and provides links to Spotify.
 
-📅Start: 14-05-23
+<a href="https://codeclimate.com/github/mssandeepkamath/muparse-android/maintainability"><img src="https://api.codeclimate.com/v1/badges/ff1d96175429d4e716d3/maintainability" /></a>
+<a href="https://codeclimate.com/github/mssandeepkamath/muparse-android/test_coverage"><img src="https://api.codeclimate.com/v1/badges/ff1d96175429d4e716d3/test_coverage" /></a>
 
-🙆Technically Feasible: No
+MuziFind is an android app that functions by capturing and analyzing internal audio from various applications such as Instagram reels and YouTube shorts. It effectively identifies the audio being played and offers convenient links to Spotify, YouTube, and the web for further exploration
 
-😵‍💫Requirements: Foreground Service, MediaProjectionManager, AudD Music Recognizer
+## Live:
 
-✅Done: Foreground Service implementation with draggable layout overlay, MediaProjectManager to listen the internal audio, UI
+### [MuziFind - Play Store](https://play.google.com/store/apps/details?id=com.sandeep.music_recognizer_app&hl=en&gl=IN)
 
-🎶Language: Kotlin, Java, XML
+## Demo:
 
-📱Image:
+### [Youtube](https://www.youtube.com/watch?v=nNGeyQrl9QY)
 
-<img src="https://github.com/mssandeepkamath/internal-music-recognizer/assets/90695071/3b077a1e-6c71-4041-8031-076b41dccc11" width="25%" height="25%" />
+## Architecture:
 
-✅Build passed.
+<img width="500" src="https://github.com/mssandeepkamath/muparse-android/assets/90695071/d3c4feb4-2586-4a4d-b521-6810f61659b3" align="center" alt="architecture"  border="0">
+
+## Usage:
+
+* Setup firebase app and add google-service.json to root.
+* Setup firebase realtime database as below:
+  
+<img width="500" src="https://github.com/mssandeepkamath/muparse-android/assets/90695071/c5624ba4-a6fd-4cd5-9733-abd1d4f43778" align="center" alt="architecture"  border="0">
+
+* Sign up to ACR cloud for secret-key, access-key & bucket information.
+* Contribute.
+
+
+
+
+
 
