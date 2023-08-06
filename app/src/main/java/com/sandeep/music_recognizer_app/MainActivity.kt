@@ -54,10 +54,8 @@ class MainActivity : AppCompatActivity(){
         loadAd()
         super.onCreate(savedInstanceState)
         window.setBackgroundDrawable(null)
-
-
         activityMainBinding.btnCasting.isEnabled = false
-        activityMainBinding.btnCasting.text = "Service Loading...."
+        activityMainBinding.btnCasting.text = "Service loading, please wait.."
         activityMainBinding.btnCasting.setBackgroundColor(Color.GRAY)
         MobileAds.initialize(this) {}
 
@@ -70,6 +68,9 @@ class MainActivity : AppCompatActivity(){
                     activityMainBinding.btnCasting.isEnabled = false
                     activityMainBinding.btnCasting.text = "Switch to other apps!"
                     startCapturing(this)
+                }else
+                {
+                    requestRecordAudioPermission()
                 }
 
             }
@@ -83,7 +84,7 @@ class MainActivity : AppCompatActivity(){
         }
 
         activityMainBinding.insta.setOnClickListener {
-            val uri = Uri.parse("http://instagram.com/_u/_mssandeep_kamath_")
+            val uri = Uri.parse("https://www.instagram.com/_mssandeep_kamath_")
             val likeIng = Intent(Intent.ACTION_VIEW, uri)
             likeIng.setPackage("com.instagram.android")
 
@@ -91,7 +92,7 @@ class MainActivity : AppCompatActivity(){
                 startActivity(likeIng)
             } catch (e: ActivityNotFoundException) {
                 startActivity(Intent(Intent.ACTION_VIEW,
-                    Uri.parse("http://instagram.com/_msandeep_kamath_")))
+                    Uri.parse("https://www.instagram.com/_mssandeep_kamath_")))
             }
         }
         activityMainBinding.git.setOnClickListener {
@@ -122,7 +123,7 @@ class MainActivity : AppCompatActivity(){
         }
         activityMainBinding.play.setOnClickListener {
             val intent=Intent(Intent.ACTION_VIEW)
-            intent.data=Uri.parse("https://play.google.com/store/apps/developer?id=M+S+Sandeep+Kamath&hl=en&gl=IN&pli=1")
+            intent.data=Uri.parse("https://play.google.com/store/apps/dev?id=6781046200635814881&hl=en&gl=US")
             startActivity(intent)
         }
     }
@@ -154,7 +155,6 @@ class MainActivity : AppCompatActivity(){
                     startOverlayService(data!!)
                 } else {
                     activityMainBinding.btnCasting.setBackgroundColor(resources.getColor(R.color.purple_500))
-                    activityMainBinding.btnCasting.setBackgroundDrawable(resources.getDrawable(R.drawable.card_border))
                     activityMainBinding.btnCasting.isEnabled = true
                     activityMainBinding.btnCasting.text = "ALLOW CASTING PERMISSION"
                     Toast.makeText(this,"Screen casting permission request rejected!",Toast.LENGTH_SHORT).show()
@@ -245,9 +245,6 @@ class MainActivity : AppCompatActivity(){
     }
     private fun loadAd() {
         var adRequest = AdRequest.Builder().build()
-
-        activityMainBinding.adView.loadAd(adRequest)
-
         InterstitialAd.load(
             this,
             AD_UNIT_ID,
@@ -271,6 +268,7 @@ class MainActivity : AppCompatActivity(){
                 }
             }
         )
+        activityMainBinding.adView.loadAd(adRequest)
     }
     private fun showInterstitial() {
         if (interstitialAd != null) {

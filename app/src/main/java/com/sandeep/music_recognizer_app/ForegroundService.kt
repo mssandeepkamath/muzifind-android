@@ -152,6 +152,7 @@ class ForegroundService : Service() {
             START_NOT_STICKY
         }
     }
+
     @RequiresApi(Build.VERSION_CODES.O)
     private fun startMyOwnForeground() {
         val channelName = "Background Service"
@@ -452,7 +453,6 @@ class ForegroundService : Service() {
         statusText.text = resources.getString(textId)
     }
 
-
     fun convertPcmToWav(pcmFilePath: String, wavFilePath: String) {
 
         val bufferSize = AudioRecord.getMinBufferSize(44100, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
@@ -562,15 +562,6 @@ class ForegroundService : Service() {
         const val ACTION_START = "AudioCaptureService:Start"
         const val ACTION_STOP = "AudioCaptureService:Stop"
         const val EXTRA_RESULT_DATA = "AudioCaptureService:Extra:ResultData"
-    }
-
-    private fun reopenApp() {
-        val intent = Intent(this, MainActivity::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
-        val stackBuilder = TaskStackBuilder.create(this)
-        stackBuilder.addNextIntentWithParentStack(intent)
-        stackBuilder.startActivities()
     }
 
 
