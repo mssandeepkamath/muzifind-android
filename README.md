@@ -1,5 +1,6 @@
 # MuziFind - Recognize Reel Songs with Internal Audio Analysis
 
+<a href="https://render.com"><img alt="Production" src="https://img.shields.io/badge/production-up-lgreen.svg"/></a>
 [![Maintainability](https://api.codeclimate.com/v1/badges/ff1d96175429d4e716d3/maintainability)](https://codeclimate.com/github/mssandeepkamath/muparse-android/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/ff1d96175429d4e716d3/test_coverage)](https://codeclimate.com/github/mssandeepkamath/muparse-android/test_coverage)
 
@@ -17,11 +18,19 @@ MuziFind is an Android app that captures and analyzes internal audio from variou
 
 ## Live on the Play Store
 
-Explore MuziFind on the [Play Store](https://play.google.com/store/apps/details?id=com.sandeep.music_recognizer_app&hl=en&gl=IN).
+<a href="https://play.google.com/store/apps/details?id=com.sandeep.music_recognizer_app&hl=en&gl=US">
+    <img alt="Play Store"
+        height="80"
+        src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" />
+        </a>
 
 ## Demo Video
 
-Check out a demonstration of MuziFind on [YouTube](https://www.youtube.com/watch?v=nNGeyQrl9QY).
+<a href="https://www.youtube.com/watch?v=nNGeyQrl9QY">
+    <img alt="Play Store"
+        height="50"
+        src="https://img.shields.io/badge/YouTube-%23FF0000.svg?style=for-the-badge&logo=YouTube&logoColor=white" />
+        </a>
 
 ## Architecture Overview
 
