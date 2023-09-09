@@ -6,23 +6,20 @@
 
 MuziFind is an Android app that captures and analyzes internal audio from various applications, such as Instagram reels and YouTube shorts. It effectively identifies the audio being played and offers convenient links to Spotify, YouTube, and the web for further exploration.
 
+<a href="https://play.google.com/store/apps/details?id=com.sandeep.music_recognizer_app&hl=en&gl=US">
+    <img alt="Play Store"
+        height="80"
+        src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" />
+        </a>
+
 ## Table of Contents
 
-- [Live on the Play Store](#live-on-the-play-store)
 - [Demo Video](#demo-video)
 - [Architecture Overview](#architecture-overview)
 - [Getting Started](#getting-started)
 - [Contribution](#contribution)
 - [License](#license)
 - [Contact](#contact)
-
-## Live on the Play Store
-
-<a href="https://play.google.com/store/apps/details?id=com.sandeep.music_recognizer_app&hl=en&gl=US">
-    <img alt="Play Store"
-        height="80"
-        src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" />
-        </a>
 
 ## Demo Video
 
