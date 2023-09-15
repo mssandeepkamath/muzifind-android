@@ -25,7 +25,7 @@ MuziFind is an Android app that captures and analyzes internal audio from variou
 
 <a href="https://www.youtube.com/watch?v=nNGeyQrl9QY">
     <img alt="Play Store"
-        height="50"
+        height="25"
         src="https://img.shields.io/badge/YouTube-%23FF0000.svg?style=for-the-badge&logo=YouTube&logoColor=white" />
         </a>
 
