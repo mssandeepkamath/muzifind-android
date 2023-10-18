@@ -65,9 +65,9 @@
                     <ImageView
                         android:layout_width="match_parent"
                         android:layout_height="@dimen/_125sdp"
-                        android:src="@drawable/arch"
+                        android:src="@drawable/banner"
                         android:layout_gravity="center"
-                        android:scaleType="centerInside"
+                        android:scaleType="centerCrop"
                         />
 
 
@@ -92,8 +92,8 @@
                         android:layout_marginTop="@dimen/_5sdp"
                         android:layout_marginBottom="@dimen/_10sdp"
                         android:fontFamily="sans-serif"
-                        android:text="Info: MuziFind doesn't access your data"
-                        android:textColor="#88231C"
+                        android:text="MuziFind doesn't store your data"
+                        android:textColor="#F63629"
                         android:textSize="@dimen/_12sdp"
                         android:textStyle="bold" />
 

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#130142"
+    android:orientation="vertical"
+    tools:context=".SplashActivity">
+
+
+    <com.skyfishjy.library.RippleBackground
+        android:id="@+id/lytripple"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        app:rb_color="#FFFFFF"
+        app:rb_duration="1500"
+        app:rb_radius="32dp"
+        app:rb_rippleAmount="1"
+        app:rb_scale="3.5">
+
+        <ImageView
+            android:id="@+id/imgLogo"
+            android:layout_width="@dimen/_150sdp"
+            android:layout_height="@dimen/_110sdp"
+            android:layout_centerInParent="true"
+            android:scaleType="centerInside"
+            android:src="@drawable/muzifind" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/imgLogo"
+            android:layout_centerInParent="true"
+            android:layout_marginTop="@dimen/_10sdp"
+            android:text="Music Discovery App"
+            android:textColor="@color/white"
+            android:textSize="@dimen/_15sdp"
+            android:textStyle="bold" />
+
+
+    </com.skyfishjy.library.RippleBackground>
+
+
+</RelativeLayout>

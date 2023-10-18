@@ -1,20 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <uses-permission  android:name="android.permission.FOREGROUND_SERVICE"/>
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
-    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <queries>
         <intent>
             <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="https" android:host="www.youtube.com" />
+
+            <data
+                android:host="www.youtube.com"
+                android:scheme="https" />
         </intent>
         <intent>
             <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="https" android:host="open.spotify.com" />
+
+            <data
+                android:host="open.spotify.com"
+                android:scheme="https" />
         </intent>
     </queries>
 
@@ -28,23 +35,27 @@
         android:theme="@style/Theme.Musicrecognizerapp"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
-
         <service
             android:name=".ForegroundService"
-            android:foregroundServiceType="mediaProjection"
-            />
+            android:foregroundServiceType="mediaProjection" />
 
         <activity
             android:name=".MainActivity"
+            android:exported="false"
+           />
+
+        <activity
+            android:name=".SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-5634416739025689~4386181264"/>
+            android:value="ca-app-pub-5634416739025689~4386181264" />
     </application>
 
 </manifest>

@@ -12,7 +12,7 @@ android {
         applicationId "com.sandeep.music_recognizer_app"
         minSdk 24
         targetSdk 33
-        versionCode 5
+        versionCode 7
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -47,12 +47,10 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     implementation "com.airbnb.android:lottie:6.0.0"
-    implementation 'com.intuit.sdp:sdp-android:1.1.0'
     implementation 'commons-codec:commons-codec:1.9'
     implementation platform('com.google.firebase:firebase-bom:32.0.0')
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.google.android.gms:play-services-ads:22.2.0'
-
-
-
+    implementation 'com.intuit.sdp:sdp-android:1.1.0'
+    implementation 'com.skyfishjy.ripplebackground:library:1.0.1'
 }
