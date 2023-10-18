@@ -1,13 +1,7 @@
 package com.sandeep.music_recognizer_app
 
-
-
-
-import android.app.Activity
-import android.app.Application
 import android.content.ActivityNotFoundException
 import android.content.Context
-import android.content.Context.MEDIA_PROJECTION_SERVICE
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -21,44 +15,46 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.ads.*
-import com.google.android.gms.ads.appopen.AppOpenAd
 import com.google.android.gms.ads.interstitial.InterstitialAd
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.sandeep.music_recognizer_app.AdManagerSingleton.adManager
 import com.sandeep.music_recognizer_app.databinding.ActivityMainBinding
-
 
 class MainActivity : AppCompatActivity(){
 
-    private val  LOG_TAG = "AppOpenAdManager"
-    private val  AD_UNIT_ID = "ca-app-pub-5634416739025689/8429368052"
     private  var data: Intent? = null
+    private val  LOG_TAG = "AppOpenAdManager"
     private lateinit var mediaProjectionManager: MediaProjectionManager
     private var isServiceStarted = false
     private lateinit var activityMainBinding : ActivityMainBinding
     val database = FirebaseDatabase.getInstance()
-    val secretKeysRef = database.getReference("secret_keys")
     private var interstitialAd: InterstitialAd? = null
-    private var adIsLoading: Boolean = false
+    private var adRequest: AdRequest? = null
+    val secretKeysRef = database.getReference("secret_keys")
+
+
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         activityMainBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(activityMainBinding.root)
-        loadAd()
         super.onCreate(savedInstanceState)
         window.setBackgroundDrawable(null)
-        activityMainBinding.btnCasting.isEnabled = false
-        activityMainBinding.btnCasting.text = "Service loading, please wait.."
-        activityMainBinding.btnCasting.setBackgroundColor(Color.GRAY)
-        MobileAds.initialize(this) {}
-
+        val adManager = AdManagerSingleton.adManager
+        activityMainBinding.btnCasting.setBackgroundColor(resources.getColor(R.color.purple_500))
+        activityMainBinding.btnCasting.isEnabled = true
+        activityMainBinding.btnCasting.text = "ALLOW CASTING PERMISSION"
+        if (adManager != null) {
+            interstitialAd = adManager.interstitialAd
+            adRequest = adManager.adRequest
+            activityMainBinding.adView.loadAd(adRequest!!)
+        }
         if(checkOverlayPermission())
         {
             activityMainBinding.btnCasting.setOnClickListener {
@@ -243,33 +239,7 @@ class MainActivity : AppCompatActivity(){
             }
         }
     }
-    private fun loadAd() {
-        var adRequest = AdRequest.Builder().build()
-        InterstitialAd.load(
-            this,
-            AD_UNIT_ID,
-            adRequest,
-            object : InterstitialAdLoadCallback() {
-                override fun onAdFailedToLoad(adError: LoadAdError) {
-                    Log.d(LOG_TAG, adError.message)
-                    interstitialAd = null
-                    adIsLoading = false
-                    val error =
-                        "domain: ${adError.domain}, code: ${adError.code}, " + "message: ${adError.message}"
-                }
 
-                override fun onAdLoaded(ad: InterstitialAd) {
-                    Log.d(LOG_TAG, "Ad was loaded.")
-                    activityMainBinding.btnCasting.setBackgroundColor(resources.getColor(R.color.purple_500))
-                    activityMainBinding.btnCasting.isEnabled = true
-                    activityMainBinding.btnCasting.text = "ALLOW CASTING PERMISSION"
-                    interstitialAd = ad
-                    adIsLoading = false
-                }
-            }
-        )
-        activityMainBinding.adView.loadAd(adRequest)
-    }
     private fun showInterstitial() {
         if (interstitialAd != null) {
             interstitialAd?.fullScreenContentCallback =
@@ -296,6 +266,7 @@ class MainActivity : AppCompatActivity(){
 
         }
     }
+
 
 
 
